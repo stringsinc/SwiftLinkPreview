@@ -119,10 +119,14 @@ extension SwiftLinkPreview {
 
     // Extract first URL from text
     internal func extractURL(text: String) -> URL? {
-        let pieces: [String] = text.components(separatedBy: " ").filter { $0.trim.isValidURL() }
-        if pieces.count > 0, let url = URL(string: pieces[0]) {
-            return url
-        }
+		if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+		, let match = detector.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) {
+			let s = (text as NSString).substring(with: match.range)
+			if let url = URL(string: s), url.scheme != nil {
+				return url
+			}
+			return URL(string: "http://\(s)")
+		}
         return nil
     }
 
