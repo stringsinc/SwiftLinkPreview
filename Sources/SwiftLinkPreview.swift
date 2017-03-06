@@ -118,7 +118,7 @@ open class SwiftLinkPreview {
 extension SwiftLinkPreview {
 
     // Extract first URL from text
-    internal func extractURL(text: String) -> URL? {
+    open func extractURL(text: String) -> URL? {
 		if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
 		, let match = detector.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) {
 			let s = (text as NSString).substring(with: match.range)
