@@ -114,18 +114,25 @@ open class SwiftLinkPreview {
     }
 }
 
+let emailPattern = "^[_A-Za-z0-9-+]+(\\.[_A-Za-z0-9-+]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z‌​]{2,})$"
+
 // Extraction functions
 extension SwiftLinkPreview {
 
     // Extract first URL from text
     open func extractURL(text: String) -> URL? {
-		if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
-		, let match = detector.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) {
-			let s = (text as NSString).substring(with: match.range)
-			if let url = URL(string: s), url.scheme != nil {
-				return url
+		if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) {
+			for match in detector.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) {
+				let s = (text as NSString).substring(with: match.range)
+				if NSPredicate(format: "SELF MATCHES %@", emailPattern).evaluate(with: s) == false {
+					if let url = URL(string: s), url.scheme != nil {
+						return url
+					}
+					if let url = URL(string: "http://\(s)") {
+						return url
+					}
+				}
 			}
-			return URL(string: "http://\(s)")
 		}
         return nil
     }
