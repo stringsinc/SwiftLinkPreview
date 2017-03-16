@@ -50,7 +50,7 @@ open class SwiftLinkPreview {
 
     // MARK: - Functions
     // Make preview
-    @discardableResult open func preview(_ text: String!, onSuccess: @escaping (Response) -> Void, onError: @escaping (PreviewError) -> Void) -> Cancellable {
+    @discardableResult open func preview(_ url: URL, onSuccess: @escaping (Response) -> Void, onError: @escaping (PreviewError) -> Void) -> Cancellable {
 
         let cancellable = Cancellable()
 
@@ -74,43 +74,38 @@ open class SwiftLinkPreview {
             }
         }
 
-        if let url = self.extractURL(text: text) {
-            workQueue.async {
-                if cancellable.isCancelled {return}
+		workQueue.async {
+			if cancellable.isCancelled {return}
 
-                if let result = self.cache.slp_getCachedResponse(url: url.absoluteString) {
-                    successResponseQueue(result)
-                } else {
+			if let result = self.cache.slp_getCachedResponse(url: url.absoluteString) {
+				successResponseQueue(result)
+			} else {
 
-                    self.unshortenURL(url, cancellable: cancellable, completion: { unshortened in
-                        if let result = self.cache.slp_getCachedResponse(url: unshortened.absoluteString) {
-                            successResponseQueue(result)
-                        } else {
+				self.unshortenURL(url, cancellable: cancellable, completion: { unshortened in
+					if let result = self.cache.slp_getCachedResponse(url: unshortened.absoluteString) {
+						successResponseQueue(result)
+					} else {
 
-                            let canonicalUrl = self.extractCanonicalURL(unshortened)
+						let canonicalUrl = self.extractCanonicalURL(unshortened)
 
-                            self.extractInfo(unshortened, cancellable: cancellable, canonicalUrl: canonicalUrl, completion: { result in
+						self.extractInfo(unshortened, cancellable: cancellable, canonicalUrl: canonicalUrl, completion: { result in
 
-                                var result = result
+							var result = result
 
-                                result[.url] = url
-                                result[.finalUrl] = unshortened
-                                result[.canonicalUrl] = canonicalUrl
+							result[.url] = url
+							result[.finalUrl] = unshortened
+							result[.canonicalUrl] = canonicalUrl
 
-                                self.cache.slp_setCachedResponse(url: unshortened.absoluteString, response: result)
-                                self.cache.slp_setCachedResponse(url: url.absoluteString, response: result)
+							self.cache.slp_setCachedResponse(url: unshortened.absoluteString, response: result)
+							self.cache.slp_setCachedResponse(url: url.absoluteString, response: result)
 
-                                successResponseQueue(result)
-                            }, onError: errorResponseQueue)
-                        }
-                    }, onError: errorResponseQueue)
-                }
-            }
-        } else {
-            onError(PreviewError.noURLHasBeenFound(text))
-        }
-
-        return cancellable
+							successResponseQueue(result)
+						}, onError: errorResponseQueue)
+					}
+				}, onError: errorResponseQueue)
+			}
+		}
+		return cancellable
     }
 }
 
