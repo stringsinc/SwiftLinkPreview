@@ -81,14 +81,14 @@ open class SwiftLinkPreview {
 				successResponseQueue(result)
 			} else {
 
-				self.unshortenURL(url, cancellable: cancellable, completion: { unshortened in
+				self.unshortenURL(url, cancellable: cancellable, completion: { (unshortened, response) in
 					if let result = self.cache.slp_getCachedResponse(url: unshortened.absoluteString) {
 						successResponseQueue(result)
 					} else {
 
 						let canonicalUrl = self.extractCanonicalURL(unshortened)
 
-						self.extractInfo(unshortened, cancellable: cancellable, canonicalUrl: canonicalUrl, completion: { result in
+						self.extractInfo(unshortened, cancellable: cancellable, canonicalUrl: canonicalUrl, response: response, completion: { result in
 
 							var result = result
 
@@ -133,7 +133,7 @@ extension SwiftLinkPreview {
     }
 
     // Unshorten URL by following redirections
-    fileprivate func unshortenURL(_ url: URL, cancellable: Cancellable, completion: @escaping (URL) -> Void, onError: @escaping (PreviewError) -> Void) {
+    fileprivate func unshortenURL(_ url: URL, cancellable: Cancellable, completion: @escaping (URL, HTTPURLResponse?) -> Void, onError: @escaping (PreviewError) -> Void) {
 
         if cancellable.isCancelled {return}
 
@@ -154,7 +154,7 @@ extension SwiftLinkPreview {
                     if (finalResult.absoluteString == url.absoluteString) {
                         self.workQueue.async {
                             if !cancellable.isCancelled {
-                                completion(url)
+                                completion(url, response as? HTTPURLResponse)
                             }
                         }
                         task = nil
@@ -166,7 +166,7 @@ extension SwiftLinkPreview {
                 } else {
                     self.workQueue.async {
                         if !cancellable.isCancelled {
-                            completion(url)
+                            completion(url, response as? HTTPURLResponse)
                         }
                     }
                     task = nil
@@ -186,10 +186,12 @@ extension SwiftLinkPreview {
     }
 
     // Extract HTML code and the information contained on it
-    fileprivate func extractInfo(_ url: URL, cancellable: Cancellable, canonicalUrl: String?, completion: @escaping (Response) -> Void, onError: (PreviewError) -> ()) {
+    fileprivate func extractInfo(_ url: URL, cancellable: Cancellable, canonicalUrl: String?, response: HTTPURLResponse?, completion: @escaping (Response) -> Void, onError: (PreviewError) -> ()) {
         if cancellable.isCancelled {return}
 
-        if(url.absoluteString.isImage()) {
+        if(url.absoluteString.isImage()
+		|| (response?.mimeType?.utiMimeType == "public.image" || (response?.allHeaderFields["Content-Encoding"] as? String)?.utiMimeType == "public.image")
+		) {
             var result = Response()
 
             result[.title] = ""
