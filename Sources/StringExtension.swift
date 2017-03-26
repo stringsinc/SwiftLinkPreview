@@ -114,7 +114,7 @@ extension String {
 
 import MobileCoreServices
 
-public extension String {
+extension String {
 
 	func tag(withClass: CFString) -> String? {
 		return UTTypeCopyPreferredTagWithClass(withClass, self as CFString)?.takeRetainedValue() as? String
@@ -138,6 +138,10 @@ public extension String {
 
 	var fileExtensionUTI: String? {
 		return uti(withClass: kUTTagClassFilenameExtension)
+	}
+	
+	func utiConforms(to: String) -> Bool {
+		return UTTypeConformsTo(self as CFString, to as CFString)
 	}
 }
 

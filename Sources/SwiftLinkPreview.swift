@@ -187,11 +187,18 @@ extension SwiftLinkPreview {
 
     // Extract HTML code and the information contained on it
     fileprivate func extractInfo(_ url: URL, cancellable: Cancellable, canonicalUrl: String?, response: HTTPURLResponse?, completion: @escaping (Response) -> Void, onError: (PreviewError) -> ()) {
-        if cancellable.isCancelled {return}
-
-        if(url.absoluteString.isImage()
-		|| (response?.mimeType?.utiMimeType == "public.image" || (response?.allHeaderFields["Content-Encoding"] as? String)?.utiMimeType == "public.image")
-		) {
+		if cancellable.isCancelled {return}
+	
+		let contentType = response?.mimeType?.mimeTypeUTI
+		let contentEncoding = (response?.allHeaderFields["Content-Encoding"] as? String)?.mimeTypeUTI
+		let contentLength = Int(response?.allHeaderFields["Content-Length"] as? String ?? "0") ?? 0
+		if contentLength > 1024*1024 {
+			onError(.tooLarge(url.absoluteString))
+		}
+		let imageUTI = "public.image"
+		let htmlUTI = "public.html"
+		
+        if [url.pathExtension.fileExtensionUTI, contentType, contentEncoding].reduce(false, { $0 || $1?.utiConforms(to: imageUTI) ?? false }) {
             var result = Response()
 
             result[.title] = ""
@@ -200,10 +207,10 @@ extension SwiftLinkPreview {
             result[.image] = url.absoluteString
 
             completion(result)
-        } else {
+        } else if [contentType, url.pathExtension.fileExtensionUTI].reduce(false , { $0 || $1?.utiConforms(to: htmlUTI) ?? false }) {
             let sourceUrl = url.absoluteString.hasPrefix("http://") || url.absoluteString.hasPrefix("https://") ? url : URL(string: "http://\(url)")
             do {
-                let data = try Data(contentsOf: sourceUrl!)
+                let data = try Data(contentsOf: sourceUrl!) // maybe should make this a URL request
                 var source: NSString? = nil
                 NSString.stringEncoding(for: data, encodingOptions: nil, convertedString: &source, usedLossyConversion: nil)
 
@@ -213,15 +220,17 @@ extension SwiftLinkPreview {
                     }
                 } else {
                     if !cancellable.isCancelled {
-                        onError(.parseError(sourceUrl!.absoluteString))
+                        onError(.parseError(sourceUrl?.absoluteString))
                     }
                 }
             } catch {
                 if !cancellable.isCancelled {
-                    onError(.cannotBeOpened(sourceUrl!.absoluteString))
+                    onError(.cannotBeOpened(sourceUrl?.absoluteString))
                 }
             }
-        }
+        } else {
+			onError(.invalidMimeType(url.absoluteString))
+		}
     }
 
 
