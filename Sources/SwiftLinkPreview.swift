@@ -195,7 +195,7 @@ extension SwiftLinkPreview {
             result[.title] = ""
             result[.description] = ""
             result[.images] = [url.absoluteString]
-            result[.image] = [url.absoluteString]
+            result[.image] = url.absoluteString
 
             completion(result)
         } else {
