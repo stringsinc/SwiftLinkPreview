@@ -38,7 +38,7 @@ class Regex {
             
             let rx = try NSRegularExpression(pattern: regex, options: [.caseInsensitive])
             
-            if let match = rx.firstMatch(in: string, options: [], range: NSMakeRange(0, string.characters.count)) {
+            if let match = rx.firstMatch(in: string, options: [], range: NSMakeRange(0, string.count)) {
                 
                 var result: [String] = Regex.stringMatches([match], text: string, index: index)
                 return result.count == 0 ? nil : result[0]
@@ -64,7 +64,7 @@ class Regex {
             
             let rx = try NSRegularExpression(pattern: regex, options: [.caseInsensitive])
             
-            let matches: [NSTextCheckingResult] = rx.matches(in: string, options: [], range: NSMakeRange(0, string.characters.count))
+            let matches: [NSTextCheckingResult] = rx.matches(in: string, options: [], range: NSMakeRange(0, string.count))
             
             return !matches.isEmpty ? Regex.stringMatches(matches, text: string, index: index) : []
             
@@ -80,8 +80,8 @@ class Regex {
     static func stringMatches(_ results: [NSTextCheckingResult], text: String, index: Int = 0) -> [String] {
         
         return results.map {
-            let range = $0.rangeAt(index)
-            if text.characters.count > range.location + range.length {
+            let range = $0.range(at: index)
+            if text.count > range.location + range.length {
                 return (text as NSString).substring(with: range)
             }
             else {

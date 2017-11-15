@@ -53,7 +53,8 @@ class MemoryLeaks: XCTestCase {
         
         for _ in 0..<requestCount {
             let slp = MemoryCheckedSwiftLinkPrefiew(expectation: e, counter: counter)
-            slp.preview("https://www.youtube.com/watch?v=IvUU8joBb1Q", onSuccess: { response in print("Response:", response) }, onError: { error in })
+            let url = URL(string: "https://www.youtube.com/watch?v=IvUU8joBb1Q")!
+            slp.preview(url, onSuccess: { response in print("Response:", response) }, onError: { error in })
         }
         
         waitForExpectations(timeout: 10.0, handler: nil)

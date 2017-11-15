@@ -38,10 +38,10 @@ extension String {
     var decoded: String {
         
         let encodedData = self.data(using: String.Encoding.utf8)!
-        let attributedOptions: [String: AnyObject] =
+        let attributedOptions: [NSAttributedString.DocumentReadingOptionKey: Any] =
             [
-                NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType as AnyObject,
-                NSCharacterEncodingDocumentAttribute: String.Encoding.utf8.rawValue as AnyObject
+                NSAttributedString.DocumentReadingOptionKey.documentType: NSAttributedString.DocumentType.html as Any,
+                NSAttributedString.DocumentReadingOptionKey.characterEncoding: String.Encoding.utf8.rawValue as Any
         ]
         
         do {
@@ -83,14 +83,14 @@ extension String {
     
     // Substring
     func substring(_ start: Int, end: Int) -> String {
-        
-        return self.substring(with: Range(self.characters.index(self.startIndex, offsetBy: start) ..< self.characters.index(self.startIndex, offsetBy: end)))
-        
+        let range = Range(self.index(self.startIndex, offsetBy: start) ..< self.index(self.startIndex, offsetBy: end))
+        return String(self[range])
     }
+
     func substring(_ range: NSRange) -> String {
         
         var end = range.location + range.length
-        end = end > self.characters.count ? self.characters.count - 1 : end
+        end = end > self.count ? self.count - 1 : end
         
         return self.substring(range.location, end: end)
         
@@ -117,11 +117,11 @@ import MobileCoreServices
 extension String {
 
 	func tag(withClass: CFString) -> String? {
-		return UTTypeCopyPreferredTagWithClass(withClass, self as CFString)?.takeRetainedValue() as? String
+        return UTTypeCopyPreferredTagWithClass(withClass, self as CFString)?.takeRetainedValue() as String?
 	}
 	
 	func uti(withClass: CFString) -> String? {
-		return UTTypeCreatePreferredIdentifierForTag(withClass, self as CFString, nil)?.takeRetainedValue() as? String
+		return UTTypeCreatePreferredIdentifierForTag(withClass, self as CFString, nil)?.takeRetainedValue() as String?
 	}
 	
 	var utiMimeType: String? {

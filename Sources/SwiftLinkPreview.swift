@@ -309,7 +309,7 @@ extension SwiftLinkPreview {
         var url = url
         if let slash = url.range(of: "/") {
 
-            let endIndex = url.characters.distance(from: url.startIndex, to: slash.upperBound)
+            let endIndex = url.distance(from: url.startIndex, to: slash.upperBound)
             url = url.substring(0, end: endIndex > 1 ? endIndex - 1 : 0)
 
         }
@@ -469,9 +469,9 @@ extension SwiftLinkPreview {
 
                 } else {
 
-                    if (resultThirdSearch.characters.count >= resultFirstSearch.characters.count) {
+                    if (resultThirdSearch.count >= resultFirstSearch.count) {
 
-                        if (resultThirdSearch.characters.count >= resultThirdSearch.characters.count) {
+                        if (resultThirdSearch.count >= resultThirdSearch.count) {
 
                             return resultThirdSearch
 
@@ -504,7 +504,7 @@ extension SwiftLinkPreview {
         let index = 2
         let rawMatches = Regex.pregMatchAll(content, regex: pattern, index: index)
         
-        let matches = rawMatches.filter({ $0.extendedTrim.tagsStripped.characters.count >= minimum })
+        let matches = rawMatches.filter({ $0.extendedTrim.tagsStripped.count >= minimum })
         var result = matches.count > 0 ? matches[0] : ""
         
         if result.isEmpty {

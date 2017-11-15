@@ -37,8 +37,8 @@ extension String {
     static func randomString(_ length: Int) -> String {
         
         let charactersString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        let charactersArray = charactersString.characters.map { String($0) }
-        
+        let charactersArray = charactersString.map { String($0) }
+
         var string = ""
         for _ in 0..<length {
             string += charactersArray[Int.random(upper: charactersArray.count)]
