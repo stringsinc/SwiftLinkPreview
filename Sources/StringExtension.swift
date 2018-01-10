@@ -43,18 +43,24 @@ extension String {
                 NSAttributedString.DocumentReadingOptionKey.documentType: NSAttributedString.DocumentType.html as Any,
                 NSAttributedString.DocumentReadingOptionKey.characterEncoding: String.Encoding.utf8.rawValue as Any
         ]
-        
-        do {
-            
-            let attributedString = try NSAttributedString(data: encodedData, options: attributedOptions, documentAttributes: nil)
-            
-            return attributedString.string
-            
-        } catch _ {
-            
-            return self
-            
+
+        // stringsinc: All calls from Strings app to this code occur in a Promise.
+        // The NSAttributedString init with html doc type needs to be on the main thread.
+        // Since all code paths from Strings app to this code occur in a Promise it's
+        // okay to kick this work to the main queue, if in the future this code is called
+        // on the main queue a deadlock will occur.
+        var result = self
+
+        DispatchQueue.main.sync {
+            do {
+                let attributedString = try NSAttributedString(data: encodedData, options: attributedOptions, documentAttributes: nil)
+                result = attributedString.string
+            } catch _ {
+                result = self
+            }
         }
+
+        return result
         
     }
     
