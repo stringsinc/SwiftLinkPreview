@@ -83,7 +83,7 @@ extension String {
     
     // Substring
     func substring(_ start: Int, end: Int) -> String {
-        let range = Range(self.index(self.startIndex, offsetBy: start) ..< self.index(self.startIndex, offsetBy: end))
+        let range = self.index(self.startIndex, offsetBy: start) ..< self.index(self.startIndex, offsetBy: end)
         return String(self[range])
     }
 
